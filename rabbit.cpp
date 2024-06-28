@@ -1,13 +1,15 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-#include <cmath> 
+#include <cmath>
+#include <thread>
+#include <chrono> 
 
 class Rabbit {
 public:
     Rabbit(double speed, double changeDirectionInterval)
         : speed(speed), changeDirectionInterval(changeDirectionInterval), x(0), y(0), timeSinceLastChange(0) {
-        std::srand(std::time(0)); // Ініціалізація генератора випадкових чисел
+        std::srand(std::time(0)); // Р†РЅС–С†С–Р°Р»С–Р·Р°С†С–СЏ РіРµРЅРµСЂР°С‚РѕСЂР° РІРёРїР°РґРєРѕРІРёС… С‡РёСЃРµР»
         changeDirection();
     }
 
@@ -37,7 +39,7 @@ private:
     void changeDirection() {
         deltaX = (std::rand() % 200 - 100) / 100.0;
         deltaY = (std::rand() % 200 - 100) / 100.0;
-        // Нормалізація вектора напрямку
+        // РќРѕСЂРјР°Р»С–Р·Р°С†С–СЏ РІРµРєС‚РѕСЂР° РЅР°РїСЂСЏРјСѓ
         double length = std::sqrt(deltaX * deltaX + deltaY * deltaY);
         deltaX /= length;
         deltaY /= length;
@@ -73,18 +75,24 @@ private:
     double boundary;
 };
 
-int main() {
-    Rabbit rabbit(1.0, 2.0); // швидкість 1.0, зміна напрямку кожні 2 секунди
-    AlbinoRabbit albino(1.0); // швидкість 1.0
-    albino.setBoundary(10.0); // межі області проживання альбіносів від -10 до 10
-
-    for (int i = 0; i < 10; ++i) {
-        rabbit.move(1.0);
-        albino.move(1.0);
-
-        rabbit.printPosition();
-        albino.printPosition();
+void simulateRabbit(Rabbit* rabbit, int steps) {
+    for (int i = 0; i < steps; ++i) {
+        rabbit->move(1.0);
+        rabbit->printPosition();
+        std::this_thread::sleep_for(std::chrono::seconds(1)); // Р”РѕРґР°С”РјРѕ Р·Р°С‚СЂРёРјРєСѓ, С‰РѕР± Р±Р°С‡РёС‚Рё Р·РјС–РЅСѓ РїРѕР·РёС†С–С—
     }
+}
+
+int main() {
+    Rabbit rabbit(1.0, 2.0); // РЁРІРёРґРєС–СЃС‚СЊ 1.0, Р·РјС–РЅР° РЅР°РїСЂСЏРјРєСѓ РєРѕР¶РЅС– 2 СЃРµРєСѓРЅРґРё
+    AlbinoRabbit albino(1.0); // РЁРІРёРґРєС–СЃС‚СЊ 1.0
+    albino.setBoundary(10.0); // РњРµР¶С– РѕР±Р»Р°СЃС‚С– РїСЂРѕР¶РёРІР°РЅРЅСЏ Р°Р»СЊР±С–РЅРѕСЃС–РІ РІС–Рґ -10 РґРѕ 10
+
+    std::thread rabbitThread(simulateRabbit, &rabbit, 10);
+    std::thread albinoThread(simulateRabbit, &albino, 10);
+
+    rabbitThread.join();
+    albinoThread.join();
 
     return 0;
 }
